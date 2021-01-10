@@ -4,18 +4,14 @@
 #include <iostream>
 #include <string>
 
-// 注意：我們每回合都會給200000，所以如果你花100000拜票然後看到錢增加100000的話，這不是bug
 // Style: https://google.github.io/styleguide/cppguide.html , 但enum用全大寫因為我們沒用macro，然後註解也不限長度
 /*
 待辦事項： (依照重要性排列)
-  - 把文字的位置放好
-  - 把文字的大小改好
-  - !!!還有新聞台到底要幹嘛啦!!!
-  - 把字體轉中文
-  - 把round X 改成 距離選舉還有 kTotalNum - X 天
-  - 增加賄賂選項並修改按下去的按鈕
-  - 增加抹黑選項並修改按下去的按鈕
+  - 增加新聞台抹黑（同一條路上隨機一地自己得票率變100）
+  - 確認警察有沒有真的檢查到賄選
   - 增加輸入名字的環節
+  - 踏到特殊地點跳出的訊息
+  - 踏到綠島時錢減半
 已完成：(依照時間排列)
   - 讓棋子出現在鍵盤上
   - 讓棋子依據dice而移動 (已經寫好取座標函數以及座標庫)
@@ -296,17 +292,6 @@ void BuildText(sf::Text &text, const sf::Font &font, const sf::String &content, 
     text.setPosition(x, y);
 }
 
-void BuildText(sf::Text &text, const sf::Font &font, const std::wstring &content, unsigned int size,
-               const sf::Color &color, sf::Uint32 style, float x, float y) {
-    text.setFont(font);
-    text.setString(content);
-    text.setCharacterSize(size);
-    text.setFillColor(color);
-    text.setStyle(style);
-    text.setOrigin(floor(text.getLocalBounds().width) / 2, floor(text.getLocalBounds().height) / 2);
-    text.setPosition(x, y);
-}
-
 // 更新dice的文字
 void ChangeDiceText(sf::Text &text, const int dice_number) {
     std::string dice_string = "You rolled " + std::to_string(dice_number) + " steps";
@@ -423,7 +408,7 @@ int main(int argc, char **argv) {
     sf::Text jail_text;
     BuildText(jail_text, big_font, "You have 3 days until you leave the jail.", 40, sf::Color::Red, sf::Text::Regular, 500, 294);
     sf::Text entering_jail_text;
-    BuildText(entering_jail_text, big_font, "                      Welcome to Lyudao!                      \nYou spend half of your properties to go sightseeing on Lyudao.");
+    BuildText(entering_jail_text, big_font, "                      Welcome to Lyudao!                      \nYou spend half of your properties to go sightseeing on Lyudao.", 40, sf::Color::Red, sf::Text::Regular, 500, 294);
 
     // Hospital Text (optional)
     sf::Text hospital_text;
