@@ -415,7 +415,7 @@ int main(int argc, char **argv) {
     sf::Text miaoli_text;
     BuildText(miaoli_text, big_font, "You have 3 days until the quarantine ends.", 40, sf::Color::Red, sf::Text::Regular, 500, 294);
     sf::Text entering_miaoli_text; //還沒搞定怎麼顯示出來
-    BuildText(entering_miaoli_text, big_font, "You have entered the territory of the independent country \"MiaoLi\",\nand everyone going abroad should be quarantined due to the COVID-19 pandemic.\nStay here for three days."\
+    BuildText(entering_miaoli_text, big_font, "You have entered the territory of The MiaoLi Empire.\nEveryone who goes abroad during the COVID-19 pandemic should be quarantined.\nStay here for three days."\
     , 40, sf::Color::Red, sf::Text::Regular, 500, 294);
 
 
@@ -456,7 +456,7 @@ int main(int argc, char **argv) {
     // NEWS setup
     // Option Mo Hei
     sf::Text option_mo_hei_text;
-    BuildText(option_mo_hei_text, big_font, "Do you want to defame your opponent? (-400,000 dollars)\n(Press\"Y\"for Yes / Press\"N\"for No)", 30, sf::Color::Blue, sf::Text::Regular, 500, 287);
+    BuildText(option_mo_hei_text, big_font, "Do you want to defame your opponent? (-400,000 dollars)\n(Press\"Y\"for Yes / Press\"N\"for No)", 36, sf::Color::Blue, sf::Text::Regular, 500, 287);
 
 
     // BackGround Setup
