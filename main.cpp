@@ -55,7 +55,7 @@ const int kMoneyEarnedAtStart = 500000;  // 一開始你拿到多少錢
 
 // Const Spend Money Consts
 const int kBaiPiaoSpendMoney = 100000;  // 拜票所花的錢
-const int kBribeSpendMoney = 1000000; // 賄選所花的錢
+const int kBribeSpendMoney = 1000000;   // 賄選所花的錢
 
 // Random Consts
 const int kDiceMin = 1;
@@ -305,7 +305,7 @@ void ChangeTellLocationText(sf::Text &text, const int location_index, const std:
     text.setPosition(200, 640);
 }
 
-void ChangeLocalPollsText(sf::Text &text, const Location *location){
+void ChangeLocalPollsText(sf::Text &text, const Location *location) {
     std::string polls_string = "Local polls : " + std::to_string(location->get_votes_of_single_player(0)) + " | " + std::to_string(location->get_votes_of_single_player(1));
     text.setString(polls_string);
 }
@@ -341,17 +341,26 @@ void ChangeTellPlayerAndPropertiesText(sf::Text &text, const Player *player) {
 }
 
 // 檢查此地是不是有票數的一般城市
-bool city_or_not(const int location_index){
+bool city_or_not(const int location_index) {
     switch (location_index) {
-        case 0: return false;
-        case 5: return false;
-        case 7: return false;
-        case 11: return false;
-        case 14: return false;
-        case 17: return false;
-        case 21: return false;
-        case 23: return false;
-        case 27: return false;
+        case 0:
+            return false;
+        case 5:
+            return false;
+        case 7:
+            return false;
+        case 11:
+            return false;
+        case 14:
+            return false;
+        case 17:
+            return false;
+        case 21:
+            return false;
+        case 23:
+            return false;
+        case 27:
+            return false;
     }
     return true;
 }
@@ -386,7 +395,7 @@ int main(int argc, char **argv) {
 
     // Dice Prompt Text
     sf::Text dice_prompt_text;
-    BuildText(dice_prompt_text, big_font, "Press \"Space\" to roll the dice!", 44, sf::Color::Blue, sf::Text::Bold, 500, 294);
+    BuildText(dice_prompt_text, big_font, "Press \"Space\" to roll the dice!", 44, sf::Color::Blue, sf::Text::Bold, 500, 365);
 
     // Dice Text
     sf::Text dice_text;
@@ -399,16 +408,14 @@ int main(int argc, char **argv) {
     // Miao Li Text (optional)
     sf::Text miaoli_text;
     BuildText(miaoli_text, big_font, "You have 3 days until the quarantine ends.", 40, sf::Color::Red, sf::Text::Regular, 500, 294);
-    sf::Text entering_miaoli_text; //還沒搞定怎麼顯示出來
-    BuildText(entering_miaoli_text, big_font, "You have entered the territory of The MiaoLi Empire.\nEveryone who goes abroad during the COVID-19 pandemic should be quarantined.\nStay here for three days."\
-    , 40, sf::Color::Red, sf::Text::Regular, 500, 294);
-
+    sf::Text entering_miaoli_text;  //還沒搞定怎麼顯示出來
+    BuildText(entering_miaoli_text, big_font, "You have entered the territory of The MiaoLi Empire.\nEveryone who goes abroad during the COVID-19 pandemic\nshould be quarantined. Stay here for three days.", 36, sf::Color::Red, sf::Text::Regular, 505, 262);
 
     // Jail Text (optional)
     sf::Text jail_text;
     BuildText(jail_text, big_font, "You have 3 days until you leave the jail.", 40, sf::Color::Red, sf::Text::Regular, 500, 294);
     sf::Text entering_jail_text;
-    BuildText(entering_jail_text, big_font, "                      Welcome to Lyudao!                      \nYou spend half of your properties to go sightseeing on Lyudao.", 40, sf::Color::Red, sf::Text::Regular, 500, 294);
+    BuildText(entering_jail_text, big_font, "You spend half of your properties\n       to go sightseeing on Lyudao.\n              Welcome to Lyudao!", 40, sf::Color::Red, sf::Text::Regular, 505, 262);
 
     // Hospital Text (optional)
     sf::Text hospital_text;
@@ -438,13 +445,12 @@ int main(int argc, char **argv) {
 
     // WAIT setup
     sf::Text next_player_prompt;
-    BuildText(next_player_prompt, big_font, "Press \"Space\" to pass the dice to the next player!", 42, sf::Color::Blue, sf::Text::Regular, 500, 294);
+    BuildText(next_player_prompt, big_font, "Press \"Space\" to pass the dice to the next player!", 42, sf::Color::Blue, sf::Text::Regular, 500, 365);
 
     // NEWS setup
     // Option Mo Hei
     sf::Text option_mo_hei_text;
-    BuildText(option_mo_hei_text, big_font, "Do you want to defame your opponent? (-400,000 dollars)\n(Press \"Y\" for Yes / Press \"N\" for No)", 36, sf::Color::Blue, sf::Text::Regular, 500, 287);
-
+    BuildText(option_mo_hei_text, big_font, "Do you want to defame your opponent? (-400,000 dollars)\n                         Press \"Y\" for Yes / Press \"N\" for No", 36, sf::Color::Blue, sf::Text::Regular, 500, 287);
 
     // BackGround Setup
 
@@ -601,6 +607,7 @@ int main(int argc, char **argv) {
     int one = 0;            // total votes in the end of player[1]
     int winner = kPlayerNum;
     bool show_error_message = false;
+    bool first_entered_miaoli = false, jail_for_sightseeing = false;
     while (render_window.isOpen()) {
         switch (state) {
             case MENU:
@@ -636,6 +643,8 @@ int main(int argc, char **argv) {
                                 players[current_id]->UpdateJailDay();
                                 players[current_id]->UpdateHospitalDay();
                                 players[current_id]->UpdateBribeDay();
+                                jail_for_sightseeing = false;
+                                first_entered_miaoli = false;
 
                                 // 更新固定現實的提示(回合，玩家，錢)
                                 ChangeTellRoundText(tell_round_text, current_round + 1);
@@ -676,6 +685,7 @@ int main(int argc, char **argv) {
                                     else if (new_location_index == 7) {
                                         players[current_id]->UpdateMiaoliDay(true);
                                         ChangeMiaoliText(miaoli_text, players[current_id]->get_miaoli_day());
+                                        first_entered_miaoli = true;
                                         state = WAIT;
                                     }
 
@@ -685,6 +695,13 @@ int main(int argc, char **argv) {
                                         ChangeHospitalText(hospital_text, players[current_id]->get_hospital_day());
                                         state = WAIT;
                                     }
+                                        // check if is on 綠島監獄. if so, change state and money /= 2
+                                    else if (new_location_index == 21) {
+                                        jail_for_sightseeing = true;
+                                        players[current_id]->UpdateMoney(-players[current_id]->get_money() / 2);
+                                        state = WAIT;
+                                    }
+
 
                                         // check if is on Police and has bribed in kBribeNum days
                                         // if so, teleport to jail and stay for 3 days
@@ -789,7 +806,7 @@ int main(int argc, char **argv) {
                 render_window.draw(dice_text);
                 render_window.draw(tell_round_text);
                 render_window.draw(tell_player_and_properties_text);
-                render_window.draw(tell_location_text);    // eg. "你現在在苗栗!"
+                render_window.draw(tell_location_text);  // eg. "你現在在苗栗!"
                 render_window.draw(polls_text);
                 render_window.draw(option_bai_piao_text);  // eg. "1. 支付100萬，增取5~10%的選票"
                 render_window.draw(option_speech_text);    // eg. "2. 獲得10~30萬台幣"
@@ -810,6 +827,7 @@ int main(int argc, char **argv) {
                     } else if (ev.type == sf::Event::EventType::KeyPressed) {
                         switch (ev.key.code) {
                             case sf::Keyboard::Space:
+
                                 state = WAIT;
                                 break;
                             case sf::Keyboard::N:
@@ -817,9 +835,6 @@ int main(int argc, char **argv) {
                                 break;
                             case sf::Keyboard::Y:
                                 break;
-
-
-
                         }
                     }
                 }
@@ -829,7 +844,7 @@ int main(int argc, char **argv) {
                 render_window.draw(tell_player_and_properties_text);
                 render_window.draw(dice_text);
                 render_window.draw(tell_location_text);  // eg. "你現在在新聞台!"
-                render_window.draw(option_mo_hei_text); // "do you want to defame your opponent?(Y/N)"
+                render_window.draw(option_mo_hei_text);  // "do you want to defame your opponent?(Y/N)"
                 render_window.draw(cat_sprite);
                 render_window.draw(prof_sprite);
                 render_window.display();
@@ -891,6 +906,10 @@ int main(int argc, char **argv) {
                 render_window.draw(prof_sprite);
                 if (city_or_not(players[current_id]->get_location_index()))
                     render_window.draw(polls_text);
+                else if (first_entered_miaoli)
+                    render_window.draw(entering_miaoli_text);
+                else if (jail_for_sightseeing)
+                    render_window.draw(entering_jail_text);
                 render_window.display();
                 break;
 
