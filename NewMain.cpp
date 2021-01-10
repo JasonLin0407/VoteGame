@@ -786,13 +786,11 @@ int main(int argc, char **argv) {
                             case sf::Keyboard::Space:
                                 std::cout << "round: " << current_round + 1 << std::endl;       // 方便debug
                                 std::cout << "rn is " << current_id << "'s turn" << std::endl;  // 方便debug
-                                // 如果是玩家1 (有兩個玩家：玩家0 與玩家1)的回合，那麼回合++
+                                // 如果是玩家1 (有兩個玩家：玩家0 與玩家1)的回合，那麼回合++，並且兩人都獲得20萬
                                 if (current_id == kPlayerNum - 1) {
                                     current_round++;
-                                }
-                                // 每回合給錢
-                                if (!players[current_id]->get_hospital_day() > 1 && !players[current_id]->get_jail_day() > 1 && !players[current_id]->get_miaoli_day() > 1) {
-                                    players[current_id]->UpdateMoney(kMoneyEachRound);
+                                    players[0]->UpdateMoney(kMoneyEachRound);
+                                    players[1]->UpdateMoney(kMoneyEachRound);
                                 }
                                 // 如果是玩家1 (有兩個玩家：玩家0 與玩家1)的回合，而且已經到限定的回合了，那麼結算選區，找出贏家
                                 if (current_id == kPlayerNum - 1 && current_round == kTotalRounds) {
