@@ -422,6 +422,8 @@ int main(int argc, char **argv) {
     // Jail Text (optional)
     sf::Text jail_text;
     BuildText(jail_text, big_font, "You have 3 days until you leave the jail.", 40, sf::Color::Red, sf::Text::Regular, 500, 294);
+    sf::Text entering_jail_text;
+    BuildText(entering_jail_text, big_font, "                      Welcome to Lyudao!                      \nYou spend half of your properties to go sightseeing on Lyudao.");
 
     // Hospital Text (optional)
     sf::Text hospital_text;
@@ -456,7 +458,7 @@ int main(int argc, char **argv) {
     // NEWS setup
     // Option Mo Hei
     sf::Text option_mo_hei_text;
-    BuildText(option_mo_hei_text, big_font, "Do you want to defame your opponent? (-400,000 dollars)\n(Press\"Y\"for Yes / Press\"N\"for No)", 36, sf::Color::Blue, sf::Text::Regular, 500, 287);
+    BuildText(option_mo_hei_text, big_font, "Do you want to defame your opponent? (-400,000 dollars)\n(Press \"Y\" for Yes / Press \"N\" for No)", 36, sf::Color::Blue, sf::Text::Regular, 500, 287);
 
 
     // BackGround Setup
