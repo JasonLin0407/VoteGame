@@ -48,13 +48,13 @@ const int kPlayerHeight = 130;
 
 // Game Setting Consts
 const int kPlayerNum = 2;
-const int kTotalRounds = 20;
+const int kTotalRounds = 15;
 const int kLocationIndexNum = 28;  // num of total locations
 const int kStartMoney = 200000;
 const int kBribeNum = 10;    // 遇到警察會回溯幾天看你有沒有賄選
-const int kMiaoliNum = 2;    // 你會在苗栗卡幾天
-const int kJailNum = 2;      // 你會在監獄卡幾天
-const int kHospitalNum = 2;  // 你會在醫院卡幾天
+const int kMiaoliNum = 3;    // 你會在苗栗卡幾天
+const int kJailNum = 3;      // 你會在監獄卡幾天
+const int kHospitalNum = 3;  // 你會在醫院卡幾天
 
 // Const Earn Money Consts
 const int kMoneyEachRound = 200000;      // 每回合增加多少錢
@@ -306,25 +306,25 @@ void ChangeTellLocationText(sf::Text &text, const int location_index, const std:
     std::string location_string = "You are now at " + list_of_locations[location_index];
     text.setFillColor(sf::Color::Red);
     text.setString(location_string);
-    text.setPosition(200, 650);
+    text.setPosition(200, 640);
     text.setCharacterSize(40);
 }
 
 // 更新"你還剩下幾天才能離開苗栗"
 void ChangeMiaoliText(sf::Text &text, const int miaoli_day) {
-    std::string miaoli_string = "You have " + std::to_string(miaoli_day) + " days until the quarantine ends.";
+    std::string miaoli_string = "You have " + std::to_string(miaoli_day - 1) + " days until the quarantine ends.";
     text.setString(miaoli_string);
 }
 
 // 更新"你還剩下幾天才能出監牢"
 void ChangeJailText(sf::Text &text, const int jail_day) {
-    std::string jail_string = "You have " + std::to_string(jail_day) + " days until you leave the jail.";
+    std::string jail_string = "You have " + std::to_string(jail_day - 1) + " days until you leave the jail.";
     text.setString(jail_string);
 }
 
 // 更新"你還剩下幾天才能出院"
 void ChangeHospitalText(sf::Text &text, const int hospital_day) {
-    std::string hospital_string = "You have " + std::to_string(hospital_day) + " days until you leave the hospital.";
+    std::string hospital_string = "You have " + std::to_string(hospital_day - 1) + " days until you leave the hospital.";
     text.setString(hospital_string);
 }
 
@@ -375,7 +375,7 @@ int main(int argc, char **argv) {
 
     // Dice Text
     sf::Text dice_text;
-    BuildText(dice_text, big_font, "", 40, sf::Color::Red, sf::Text::Regular, 200, 600);
+    BuildText(dice_text, big_font, "", 40, sf::Color::Red, sf::Text::Regular, 200, 590);
 
     // Miao Li Text (optional)
     sf::Text miaoli_text;
@@ -397,15 +397,15 @@ int main(int argc, char **argv) {
     // CITY setup
     // Option Bai Piao
     sf::Text option_bai_piao_text;
-    BuildText(option_bai_piao_text, big_font, "1. Give a campaign speech (-10,0000 dollars).", 30, sf::Color::Blue, sf::Text::Regular, 500, 267);
+    BuildText(option_bai_piao_text, big_font, "1. Beg for votes door-to-door (-10,0000 dollars).", 36, sf::Color::Blue, sf::Text::Regular, 500, 210);
 
     // Error Message
     sf::Text error_message_text;
-    BuildText(error_message_text, big_font, "You don't have enough money!", 50, sf::Color::Red, sf::Text::Bold, 500, 357);
+    BuildText(error_message_text, big_font, "You don't have enough money!", 38, sf::Color::Red, sf::Text::Bold, 500, 370);
 
     // Option Speech
     sf::Text option_speech_text;
-    BuildText(option_speech_text, big_font, "2. Hold a fundraising party (No cost).", 30, sf::Color::Blue, sf::Text::Regular, 500, 307);
+    BuildText(option_speech_text, big_font, "2. Give a fundraising speech (No cost).", 36, sf::Color::Blue, sf::Text::Regular, 500, 250);
 
     // WAIT setup
     sf::Text next_player_prompt;
@@ -545,12 +545,12 @@ int main(int argc, char **argv) {
     // tell round text
     sf::Text tell_round_text;
     tell_round_text.setOrigin(floor(tell_round_text.getLocalBounds().width) / 2, floor(tell_round_text.getLocalBounds().height) / 2);
-    BuildText(tell_round_text, big_font, std::to_string(kTotalRounds), 96, sf::Color::Black, sf::Text::Regular, 660, 710);
+    BuildText(tell_round_text, big_font, std::to_string(kTotalRounds), 88, sf::Color::Black, sf::Text::Regular, 700, 720);
 
     // tell player and properties text
     sf::Text tell_player_and_properties_text;
     std::string p_and_p_init = "Player: " + players[0]->get_player_name() +  "\n" + "$ " + std::to_string(players[0]->get_money()) + " (NTD)";
-    BuildText(tell_player_and_properties_text, big_font, p_and_p_init, 28, sf::Color::Black, sf::Text::Regular, 320, 750);
+    BuildText(tell_player_and_properties_text, big_font, p_and_p_init, 40, sf::Color::Black, sf::Text::Regular, 290, 740);
 
     // tell who is the winner(set the string later when the game ends), and the game result
     sf::Text winner_text;
@@ -615,10 +615,6 @@ int main(int argc, char **argv) {
                                     state = WAIT;
                                 } else {
                                     std::cout << "dice rolled" << std::endl;
-
-                                    // 每回合給錢
-                                    if (current_round != 0)
-                                        players[current_id]->UpdateMoney(kMoneyEachRound);
 
                                     // throw the dice, update location and text
                                     int dice_value = RandomDice();
@@ -688,11 +684,11 @@ int main(int argc, char **argv) {
                 render_window.clear(sf::Color::Black);
                 render_window.draw(board_sprite);
                 // 如果有特殊情況的話，把那個特殊情況印出來(文字在Dice那邊做修正)
-                if (players[current_id]->get_is_still_in_miaoli()) {
+                if (players[current_id]->get_miaoli_day() > 1) {
                     render_window.draw(miaoli_text);
-                } else if (players[current_id]->get_is_still_in_jail()) {
+                } else if (players[current_id]->get_miaoli_day() > 1) {
                     render_window.draw(jail_text);
-                } else if (players[current_id]->get_is_still_in_hospital()) {
+                } else if (players[current_id]->get_miaoli_day() > 1) {
                     render_window.draw(hospital_text);
                 } else {
                     render_window.draw(dice_prompt_text);
@@ -774,6 +770,7 @@ int main(int argc, char **argv) {
                 render_window.draw(board_sprite);
                 render_window.draw(tell_round_text);
                 render_window.draw(tell_player_and_properties_text);
+                render_window.draw(dice_text);
                 render_window.draw(tell_location_text);  // eg. "你現在在新聞台!"
                 render_window.draw(cat_sprite);
                 render_window.draw(prof_sprite);
@@ -793,6 +790,10 @@ int main(int argc, char **argv) {
                                 if (current_id == kPlayerNum - 1) {
                                     current_round++;
                                 }
+                                // 每回合給錢
+                                if (!players[current_id]->get_hospital_day() > 1 && !players[current_id]->get_jail_day() > 1 && !players[current_id]->get_miaoli_day() > 1) {
+                                    players[current_id]->UpdateMoney(kMoneyEachRound);
+                                }
                                 // 如果是玩家1 (有兩個玩家：玩家0 與玩家1)的回合，而且已經到限定的回合了，那麼結算選區，找出贏家
                                 if (current_id == kPlayerNum - 1 && current_round == kTotalRounds) {
                                     // 每個選區跑一遍
@@ -810,9 +811,9 @@ int main(int argc, char **argv) {
                                     }
                                     std::cout << "end game, winner: " << winner << std::endl;  // 方便debug
                                     winner_str = winner == 0 ? "Player One becomes the president!" : "Player Two becomes the president!";
-                                    BuildText(winner_text, big_font, winner_str, 45, sf::Color::White, sf::Text::Regular, 500, 800);
+                                    BuildText(winner_text, big_font, winner_str, 60, sf::Color::White, sf::Text::Regular, 500, 800);
                                     result_str = "Player One | " + std::to_string(zero) + " : " + std::to_string(one) + " | Player Two";
-                                    BuildText(result_text, big_font, result_str, 30, sf::Color::Cyan, sf::Text::Regular, 500, 900);
+                                    BuildText(result_text, big_font, result_str, 50, sf::Color::Cyan, sf::Text::Regular, 500, 900);
                                     state = END;
                                 } else {
                                     // 如果沒有結算的話，交換玩家，更新文字，回到dice
