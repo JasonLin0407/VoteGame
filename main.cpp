@@ -429,19 +429,19 @@ int main(int argc, char **argv) {
     // CITY setup
     // Option Bai Piao
     sf::Text option_bai_piao_text;
-    BuildText(option_bai_piao_text, big_font, "1. Beg for votes door-to-door. (-100,000 dollars)", 36, sf::Color::Blue, sf::Text::Regular, 500, 210);
+    BuildText(option_bai_piao_text, big_font, "1. Beg for votes door-to-door. (-100,000 dollars)", 40, sf::Color::Blue, sf::Text::Regular, 500, 210);
 
     // Error Message
     sf::Text error_message_text;
-    BuildText(error_message_text, big_font, "You don't have enough money!", 38, sf::Color::Red, sf::Text::Bold, 500, 370);
+    BuildText(error_message_text, big_font, "You don't have enough money!", 40, sf::Color::Red, sf::Text::Bold, 500, 370);
 
     // Option Speech
     sf::Text option_speech_text;
-    BuildText(option_speech_text, big_font, "2. Give a fundraising speech. (No cost)", 36, sf::Color::Blue, sf::Text::Regular, 500, 250);
+    BuildText(option_speech_text, big_font, "2. Give a fundraising speech. (No cost)", 40, sf::Color::Blue, sf::Text::Regular, 500, 260);
 
     // Option Hui xuan
     sf::Text option_bribe_text;
-    BuildText(option_bribe_text, big_font, "3. Bribe the citizens. (-1,000,000 dollars)", 36, sf::Color::Blue, sf::Text::Regular, 500, 290);
+    BuildText(option_bribe_text, big_font, "3. Bribe the citizens. (-1,000,000 dollars)", 40, sf::Color::Blue, sf::Text::Regular, 500, 310);
 
     // WAIT setup
     sf::Text next_player_prompt;
