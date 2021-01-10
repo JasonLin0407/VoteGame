@@ -1,8 +1,8 @@
 #include <SFML/Graphics.hpp>
+#include <cmath>
 #include <ctime>
 #include <iostream>
 #include <string>
-#include <cmath>
 
 // 注意：我們每回合都會給200000，所以如果你花100000拜票然後看到錢增加100000的話，這不是bug
 // Style: https://google.github.io/styleguide/cppguide.html , 但enum用全大寫因為我們沒用macro，然後註解也不限長度
@@ -16,13 +16,10 @@
   - 增加賄賂選項並修改按下去的按鈕
   - 增加抹黑選項並修改按下去的按鈕
   - 增加輸入名字的環節
-
 已完成：(依照時間排列)
   - 讓棋子出現在鍵盤上
   - 讓棋子依據dice而移動 (已經寫好取座標函數以及座標庫)
-
 發現的Bug:(依照時間排列)
-
 然後就是因為main有點大，不知道大家知不知道有一些text editor/ide 可以：
   - 把滑鼠停在某函數/變數上面即可看到註解 (前提是我有註解好)
   - 按control再把滑鼠停在某函數/變數上面可以看code內容，點進去可以直接跳到那個code的地方
@@ -62,6 +59,7 @@ const int kMoneyEarnedAtStart = 500000;  // 一開始你拿到多少錢
 
 // Const Spend Money Consts
 const int kBaiPiaoSpendMoney = 100000;  // 拜票所花的錢
+const int kBribeSpendMoney = 1000000; // 賄選所花的錢
 
 // Random Consts
 const int kDiceMin = 1;
@@ -214,7 +212,7 @@ public:
     }
     // 回傳你是否還在住院
     bool get_is_still_in_hospital() const {
-        return (miaoli_day_ > 0) ? true : false;
+        return (hospital_day_ > 0) ? true : false;
     }
     // 回傳你還剩下幾天出院
     int get_hospital_day() const {
@@ -243,6 +241,12 @@ public:
     int get_votes_in_this_region() const {
         return votes_in_this_region_;
     }
+
+    // 回傳玩家在這個地區的得票率
+    int get_votes_of_single_player(int playerNum) const {
+        return vote_[playerNum];
+    };
+
     // 回傳這個地區目前的贏家
     int get_current_winner() {  // assuming 2 players
         if (vote_[0] > vote_[1])
@@ -263,10 +267,19 @@ public:
         player->UpdateMoney(-kBaiPiaoSpendMoney);
     }
 
-    // updates the money of the plaer and the votes of the player in this location if speech
+    // updates the money of the player and the votes of the player in this location if speech
     void Speech(Player *player) {
         int delta_money = RandomSpeechGetMoney();
         player->UpdateMoney(delta_money);
+    }
+
+    // updates the money of the player and the votes of the player in this location if huixuan
+    void Bribe(Player *player) {
+        int delta_vote = vote_[player->get_player_index()] / 2;
+        vote_[player->get_player_index()] += delta_vote;
+        vote_[std::abs(1 - player->get_player_index())] -= delta_vote;
+        player->UpdateMoney(-kBribeSpendMoney);
+        player->UpdateBribeDay(true);
     }
 };
 
@@ -294,7 +307,6 @@ void BuildText(sf::Text &text, const sf::Font &font, const std::wstring &content
     text.setPosition(x, y);
 }
 
-
 // 更新dice的文字
 void ChangeDiceText(sf::Text &text, const int dice_number) {
     std::string dice_string = "You rolled " + std::to_string(dice_number) + " steps";
@@ -304,10 +316,13 @@ void ChangeDiceText(sf::Text &text, const int dice_number) {
 // 更新地點告知的文字
 void ChangeTellLocationText(sf::Text &text, const int location_index, const std::string *list_of_locations) {
     std::string location_string = "You are now at " + list_of_locations[location_index];
-    text.setFillColor(sf::Color::Red);
     text.setString(location_string);
     text.setPosition(200, 640);
-    text.setCharacterSize(40);
+}
+
+void ChangeLocalPollsText(sf::Text &text, const Location *location){
+    std::string polls_string = "Local polls : " + std::to_string(location->get_votes_of_single_player(0)) + " | " + std::to_string(location->get_votes_of_single_player(1));
+    text.setString(polls_string);
 }
 
 // 更新"你還剩下幾天才能離開苗栗"
@@ -336,10 +351,25 @@ void ChangeTellRoundText(sf::Text &text, const int round) {
 
 // 更新"現在是誰在玩" 以及 "他有多少錢"
 void ChangeTellPlayerAndPropertiesText(sf::Text &text, const Player *player) {
-    std::string p_and_p_string = "Player: " + player->get_player_name() + "\n" + "$ " + std::to_string(player->get_money()) + " (NTD)";
+    std::string p_and_p_string = "Player " + player->get_player_name() + ": $ " + std::to_string(player->get_money()) + " (NTD)";
     text.setString(p_and_p_string);
 }
 
+// 檢查此地是不是有票數的一般城市
+bool city_or_not(const int location_index){
+    switch (location_index) {
+        case 0: return false;
+        case 5: return false;
+        case 7: return false;
+        case 11: return false;
+        case 14: return false;
+        case 17: return false;
+        case 21: return false;
+        case 23: return false;
+        case 27: return false;
+    }
+    return true;
+}
 
 // function that finds the coordinates of players
 sf::Vector2f GetLocation(int player_num, int location_index, float coordinates[][4]) {
@@ -377,9 +407,17 @@ int main(int argc, char **argv) {
     sf::Text dice_text;
     BuildText(dice_text, big_font, "", 40, sf::Color::Red, sf::Text::Regular, 200, 590);
 
+    // Local polls Text
+    sf::Text polls_text;
+    BuildText(polls_text, big_font, "", 40, sf::Color::Magenta, sf::Text::Regular, 200, 695);
+
     // Miao Li Text (optional)
     sf::Text miaoli_text;
     BuildText(miaoli_text, big_font, "You have 3 days until the quarantine ends.", 40, sf::Color::Red, sf::Text::Regular, 500, 294);
+    sf::Text entering_miaoli_text; //還沒搞定怎麼顯示出來
+    BuildText(entering_miaoli_text, big_font, "You have entered the territory of the independent country \"MiaoLi\",\nand everyone going abroad should be quarantined due to the COVID-19 pandemic.\nStay here for three days."\
+    , 40, sf::Color::Red, sf::Text::Regular, 500, 294);
+
 
     // Jail Text (optional)
     sf::Text jail_text;
@@ -392,12 +430,12 @@ int main(int argc, char **argv) {
     // CITY and NEWS setup
     // Tell Location Text
     sf::Text tell_location_text;
-    BuildText(tell_location_text, big_font, "", 32, sf::Color::Red, sf::Text::Regular, 220, 650);
+    BuildText(tell_location_text, big_font, "", 40, sf::Color::Red, sf::Text::Regular, 220, 650);
 
     // CITY setup
     // Option Bai Piao
     sf::Text option_bai_piao_text;
-    BuildText(option_bai_piao_text, big_font, "1. Beg for votes door-to-door (-10,0000 dollars).", 36, sf::Color::Blue, sf::Text::Regular, 500, 210);
+    BuildText(option_bai_piao_text, big_font, "1. Beg for votes door-to-door. (-100,000 dollars)", 36, sf::Color::Blue, sf::Text::Regular, 500, 210);
 
     // Error Message
     sf::Text error_message_text;
@@ -405,11 +443,21 @@ int main(int argc, char **argv) {
 
     // Option Speech
     sf::Text option_speech_text;
-    BuildText(option_speech_text, big_font, "2. Give a fundraising speech (No cost).", 36, sf::Color::Blue, sf::Text::Regular, 500, 250);
+    BuildText(option_speech_text, big_font, "2. Give a fundraising speech. (No cost)", 36, sf::Color::Blue, sf::Text::Regular, 500, 250);
+
+    // Option Hui xuan
+    sf::Text option_bribe_text;
+    BuildText(option_bribe_text, big_font, "3. Bribe the citizens. (-1,000,000 dollars)", 36, sf::Color::Blue, sf::Text::Regular, 500, 290);
 
     // WAIT setup
     sf::Text next_player_prompt;
-    BuildText(next_player_prompt, big_font, "Press \"Space\" to pass the dice \n to the next player!", 45 , sf::Color::Blue, sf::Text::Regular, 500, 294);
+    BuildText(next_player_prompt, big_font, "Press \"Space\" to pass the dice to the next player!", 42, sf::Color::Blue, sf::Text::Regular, 500, 294);
+
+    // NEWS setup
+    // Option Mo Hei
+    sf::Text option_mo_hei_text;
+    BuildText(option_mo_hei_text, big_font, "Do you want to defame your opponent? (-400,000 dollars)\n(Press\"Y\"for Yes / Press\"N\"for No)", 30, sf::Color::Blue, sf::Text::Regular, 500, 287);
+
 
     // BackGround Setup
 
@@ -475,7 +523,7 @@ int main(int argc, char **argv) {
             "Taitung County",
             "Lyudao Prison",
             "Yilan County",
-            "ROC Criminal Investigation Bureau", // 內政部警政署刑事警察局
+            "ROC Criminal Investigation Bureau",  // 內政部警政署刑事警察局
             "Hualien County",
             "Kinmen County",
             "Lienchiang County",
@@ -549,8 +597,8 @@ int main(int argc, char **argv) {
 
     // tell player and properties text
     sf::Text tell_player_and_properties_text;
-    std::string p_and_p_init = "Player: " + players[0]->get_player_name() +  "\n" + "$ " + std::to_string(players[0]->get_money()) + " (NTD)";
-    BuildText(tell_player_and_properties_text, big_font, p_and_p_init, 40, sf::Color::Black, sf::Text::Regular, 290, 740);
+    std::string p_and_p_init = "Player " + players[0]->get_player_name() + ": $ " + std::to_string(players[0]->get_money()) + " (NTD)";
+    BuildText(tell_player_and_properties_text, big_font, p_and_p_init, 40, sf::Color::Black, sf::Text::Regular, 363, 770);
 
     // tell who is the winner(set the string later when the game ends), and the game result
     sf::Text winner_text;
@@ -624,10 +672,10 @@ int main(int argc, char **argv) {
                                     int new_location_index = players[current_id]->get_location_index();  // indicates the location of the player in this round
                                     ChangeDiceText(dice_text, dice_value);
                                     ChangeTellLocationText(tell_location_text, new_location_index, list_of_location_names);
-                                    if (current_id == 0){
+                                    ChangeLocalPollsText(polls_text, locations[new_location_index]);
+                                    if (current_id == 0) {
                                         cat_sprite.setPosition(GetLocation(0, new_location_index, coordinates));
-                                    }
-                                    else if (current_id == 1) {
+                                    } else if (current_id == 1) {
                                         prof_sprite.setPosition(GetLocation(1, new_location_index, coordinates));
                                     }
 
@@ -663,7 +711,6 @@ int main(int argc, char **argv) {
                                             } else if (current_id == 1) {
                                                 prof_sprite.setPosition(GetLocation(1, 21, coordinates));
                                             }
-
                                         }
                                         state = WAIT;
                                     }
@@ -686,9 +733,9 @@ int main(int argc, char **argv) {
                 // 如果有特殊情況的話，把那個特殊情況印出來(文字在Dice那邊做修正)
                 if (players[current_id]->get_miaoli_day() > 1) {
                     render_window.draw(miaoli_text);
-                } else if (players[current_id]->get_miaoli_day() > 1) {
+                } else if (players[current_id]->get_jail_day() > 1) {
                     render_window.draw(jail_text);
-                } else if (players[current_id]->get_miaoli_day() > 1) {
+                } else if (players[current_id]->get_hospital_day() > 1) {
                     render_window.draw(hospital_text);
                 } else {
                     render_window.draw(dice_prompt_text);
@@ -718,6 +765,7 @@ int main(int argc, char **argv) {
                                     // 更新文字
                                     ChangeTellRoundText(tell_round_text, current_round + 1);
                                     ChangeTellPlayerAndPropertiesText(tell_player_and_properties_text, players[current_id]);
+                                    ChangeLocalPollsText(polls_text, locations[players[current_id]->get_location_index()]);
                                     show_error_message = false;
                                     state = WAIT;
                                 }
@@ -728,8 +776,23 @@ int main(int argc, char **argv) {
                                 // 更新文字
                                 ChangeTellRoundText(tell_round_text, current_round + 1);
                                 ChangeTellPlayerAndPropertiesText(tell_player_and_properties_text, players[current_id]);
+                                ChangeLocalPollsText(polls_text, locations[players[current_id]->get_location_index()]);
                                 show_error_message = false;
                                 state = WAIT;
+                                break;
+                            case sf::Keyboard::Num3:
+                                if (players[current_id]->get_money() < kBribeSpendMoney) {
+                                    show_error_message = true;
+                                } else {
+                                    // 呼叫賄選函數
+                                    locations[players[current_id]->get_location_index()]->Bribe(players[current_id]);
+                                    // 更新文字
+                                    ChangeTellRoundText(tell_round_text, current_round + 1);
+                                    ChangeTellPlayerAndPropertiesText(tell_player_and_properties_text, players[current_id]);
+                                    ChangeLocalPollsText(polls_text, locations[players[current_id]->get_location_index()]);
+                                    show_error_message = false;
+                                    state = WAIT;
+                                }
                                 break;
                         }
                     }
@@ -740,8 +803,10 @@ int main(int argc, char **argv) {
                 render_window.draw(tell_round_text);
                 render_window.draw(tell_player_and_properties_text);
                 render_window.draw(tell_location_text);    // eg. "你現在在苗栗!"
+                render_window.draw(polls_text);
                 render_window.draw(option_bai_piao_text);  // eg. "1. 支付100萬，增取5~10%的選票"
                 render_window.draw(option_speech_text);    // eg. "2. 獲得10~30萬台幣"
+                render_window.draw(option_bribe_text);
                 render_window.draw(cat_sprite);
                 render_window.draw(prof_sprite);
                 if (show_error_message) {
@@ -757,12 +822,17 @@ int main(int argc, char **argv) {
                         render_window.close();
                     } else if (ev.type == sf::Event::EventType::KeyPressed) {
                         switch (ev.key.code) {
-                            case sf::Keyboard::Escape:
-                                state = END;
-                                break;
                             case sf::Keyboard::Space:
                                 state = WAIT;
                                 break;
+                            case sf::Keyboard::N:
+                                state = WAIT;
+                                break;
+                            case sf::Keyboard::Y:
+                                break;
+
+
+
                         }
                     }
                 }
@@ -772,6 +842,7 @@ int main(int argc, char **argv) {
                 render_window.draw(tell_player_and_properties_text);
                 render_window.draw(dice_text);
                 render_window.draw(tell_location_text);  // eg. "你現在在新聞台!"
+                render_window.draw(option_mo_hei_text); // "do you want to defame your opponent?(Y/N)"
                 render_window.draw(cat_sprite);
                 render_window.draw(prof_sprite);
                 render_window.display();
@@ -831,6 +902,8 @@ int main(int argc, char **argv) {
                 render_window.draw(tell_player_and_properties_text);
                 render_window.draw(cat_sprite);
                 render_window.draw(prof_sprite);
+                if (city_or_not(players[current_id]->get_location_index()))
+                    render_window.draw(polls_text);
                 render_window.display();
                 break;
 
@@ -844,19 +917,18 @@ int main(int argc, char **argv) {
                 }
                 render_window.clear(sf::Color::Black);
                 // Display the winner and the  winner's photo
-                if (winner == 0){
+                if (winner == 0) {
                     cat_sprite.setOrigin(floor(cat_sprite.getLocalBounds().width) / 2, floor(cat_sprite.getLocalBounds().height) / 2);
                     cat_sprite.setPosition(kWindowWidth / 2, kWindowHeight / 2);
                     cat_sprite.setScale(1.2, 1.2);
                     render_window.draw(cat_sprite);
-                }
-                else if (winner == 1){
+                } else if (winner == 1) {
                     prof_sprite.setOrigin(floor(prof_sprite.getLocalBounds().width) / 2, floor(prof_sprite.getLocalBounds().height) / 2);
                     prof_sprite.setPosition(kWindowWidth / 2, kWindowHeight / 2);
                     prof_sprite.setScale(1.2, 1.2);
                     render_window.draw(prof_sprite);
                 }
-                render_window.draw(winner_text);// eg. "winner is XXX. \n <player0> has xx votes.\n <player1> has yy votes."
+                render_window.draw(winner_text);  // eg. "winner is XXX. \n <player0> has xx votes.\n <player1> has yy votes."
                 render_window.draw(result_text);
                 render_window.display();
                 break;
