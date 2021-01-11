@@ -55,8 +55,8 @@ const int kMoneyEarnedAtStart = 500000;  // 一開始你拿到多少錢
 
 // Const Spend Money Consts
 const int kBaiPiaoSpendMoney = 100000;  // 拜票所花的錢
-const int kBribeSpendMoney = 1000000;   // 賄選所花的錢
-const int kMoheiSpendMoney = 400000;
+const int kBribeSpendMoney = 800000;   // 賄選所花的錢
+const int kMoheiSpendMoney = 1000000;
 
 // Random Consts
 const int kDiceMin = 1;
@@ -469,7 +469,7 @@ int main(int argc, char **argv) {
   sf::Text hospital_text;
   BuildText(hospital_text, big_font, "You have 3 days until you leave the hospital.", 40, sf::Color::Red, sf::Text::Regular, 500, 294);
   sf::Text entering_hos_text;
-  BuildText(entering_hos_text, big_font, "Professor Ko invites you to do some volunteer work\n in the hospital.  Being a politician, you have no choice.\nStay here for 3 days.", 36, sf::Color::Red, sf::Text::Regular, 505, 262);
+  BuildText(entering_hos_text, big_font, "Professor Ko invites you to do some volunteer work\nin the hospital.  Being a politician, you have no choice.\nStay here for 3 days.", 36, sf::Color::Red, sf::Text::Regular, 505, 262);
 
   // CITY and NEWS setup
   // Tell Location Text
@@ -491,7 +491,7 @@ int main(int argc, char **argv) {
 
   // Option Hui xuan
   sf::Text option_bribe_text;
-  BuildText(option_bribe_text, big_font, "3. Bribe the citizens. (-1,000,000 dollars)", 40, sf::Color::Blue, sf::Text::Regular, 500, 310);
+  BuildText(option_bribe_text, big_font, "3. Bribe the citizens. (-800,000 dollars)", 40, sf::Color::Blue, sf::Text::Regular, 500, 310);
 
   // WAIT setup
   sf::Text next_player_prompt;
@@ -500,7 +500,7 @@ int main(int argc, char **argv) {
   // NEWS setup
   // Option Mo Hei
   sf::Text option_mo_hei_text;
-  BuildText(option_mo_hei_text, big_font, "Do you want to defame your opponent? (-400,000 dollars)\n                         Press \"Y\" for Yes / Press \"N\" for No", 36, sf::Color::Blue, sf::Text::Regular, 500, 287);
+  BuildText(option_mo_hei_text, big_font, "Do you want to defame your opponent? (-1,000,000 dollars)\n                         Press \"Y\" for Yes / Press \"N\" for No", 36, sf::Color::Blue, sf::Text::Regular, 500, 287);
 
   sf::Text believe_mo_hei_text;
   BuildText(believe_mo_hei_text, big_font, "", 34, sf::Color::Red, sf::Text::Regular, 500, 270);
