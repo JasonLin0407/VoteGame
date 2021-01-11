@@ -25,6 +25,7 @@
 
 enum State {  // 這告訴我們現在在哪個狀況下 然後main 就會跑相對應的程式
   MENU,
+  RULE,
   NAME,  // 輸入名字 (目前還沒有)
   DICE,  // when the first player rolls the dice
   CITY,  // should be <location type 1> state_1
@@ -34,16 +35,17 @@ enum State {  // 這告訴我們現在在哪個狀況下 然後main 就會跑相
 } state;
 
 // Size consts
-const int kWindowWidth = 1000;
-const int kWindowHeight = 1000;
-const int kPlayerWidth = 130;
-const int kPlayerHeight = 130;
+const float scale = 1.4;
+const int kWindowWidth = 1000 * scale;
+const int kWindowHeight = 1000 * scale;
+const int kPlayerWidth = 130 * scale;
+const int kPlayerHeight = 130 * scale;
 
 // Game Setting Consts
 const int kPlayerNum = 2;
 const int kTotalRounds = 15;
 const int kLocationIndexNum = 28;  // num of total locations
-const int kStartMoney = 200000;
+const int kStartMoney = 200000; // 一開始拿到的錢
 const int kBribeNum = 10;    // 遇到警察會回溯幾天看你有沒有賄選
 const int kMiaoliNum = 3;    // 你會在苗栗卡幾天
 const int kJailNum = 3;      // 你會在監獄卡幾天
@@ -51,20 +53,20 @@ const int kHospitalNum = 3;  // 你會在醫院卡幾天
 
 // Const Earn Money Consts
 const int kMoneyEachRound = 200000;      // 每回合增加多少錢
-const int kMoneyEarnedAtStart = 500000;  // 一開始你拿到多少錢
+const int kMoneyEarnedAtStart = 500000;  // 走到起點拿到的錢
 
 // Const Spend Money Consts
 const int kBaiPiaoSpendMoney = 100000;  // 拜票所花的錢
-const int kBribeSpendMoney = 800000;   // 賄選所花的錢
+const int kBribeSpendMoney = 800000;    // 賄選所花的錢
 const int kMoheiSpendMoney = 1000000;
 
 // Random Consts
 const int kDiceMin = 1;
 const int kDiceMax = 6;
 const int kDiceRange = kDiceMax - kDiceMin + 1;
-const int kBaiPiaoVoteMin = 5;                                                 // 拜票至少會讓你的選票百分比增加多少
-const int kBaiPiaoVoteMax = 10;                                                // 拜票最多會讓你的選票百分比增加多少
-const int kBaiPiaoVoteRange = kBaiPiaoVoteMax - kBaiPiaoVoteMin + 1;           // 拜票會讓你的選票百分比增加多少的範圍
+const int kBaiPiaoVoteMin = 5;                                        // 拜票至少會讓你的選票百分比增加多少
+const int kBaiPiaoVoteMax = 10;                                       // 拜票最多會讓你的選票百分比增加多少
+const int kBaiPiaoVoteRange = kBaiPiaoVoteMax - kBaiPiaoVoteMin + 1;  // 拜票會讓你的選票百分比增加多少的範圍
 const int kBribeVoteMin = 30;
 const int kBribeVoteMax = 60;
 const int kBribeVoteRange = kBribeVoteMax - kBribeVoteMin + 1;
@@ -86,7 +88,7 @@ int RandomSpeechGetMoney() {
   return rand() % kSpeechGetMoneyRange + kSpeechGetMoneyMin;
 }
 
-int RandomBribeVote(){
+int RandomBribeVote() {
   return rand() % kBribeVoteRange + kBribeVoteMin;
 }
 
@@ -250,7 +252,6 @@ class Location {
     return name_;
   }
 
-
   // 回傳這個地區的總票數(可以拿的)
   int get_votes_in_this_region() const {
     return votes_in_this_region_;
@@ -278,13 +279,12 @@ class Location {
     int delta_vote = RandomBaiPiaoVote();
     vote_[player->get_player_index()] += delta_vote;
     vote_[std::abs(1 - player->get_player_index())] -= delta_vote;
-    if (vote_[0] > 100){
-        vote_[0] = 100;
-        vote_[1] = 0;
-    }
-    else if (vote_[1] > 100){
-        vote_[1] = 100;
-        vote_[0] = 0;
+    if (vote_[0] > 100) {
+      vote_[0] = 100;
+      vote_[1] = 0;
+    } else if (vote_[1] > 100) {
+      vote_[1] = 100;
+      vote_[0] = 0;
     }
     player->UpdateMoney(-kBaiPiaoSpendMoney);
   }
@@ -297,16 +297,15 @@ class Location {
 
   // updates the money of the player and the votes of the player in this location if huixuan
   void Bribe(Player *player) {
-    int delta_vote = vote_[player->get_player_index()] / 2;
+    int delta_vote = RandomBribeVote();
     vote_[player->get_player_index()] += delta_vote;
     vote_[std::abs(1 - player->get_player_index())] -= delta_vote;
-    if (vote_[0] > 100){
-        vote_[0] = 100;
-        vote_[1] = 0;
-    }
-    else if (vote_[1] > 100){
-        vote_[1] = 100;
-        vote_[0] = 0;
+    if (vote_[0] > 100) {
+      vote_[0] = 100;
+      vote_[1] = 0;
+    } else if (vote_[1] > 100) {
+      vote_[1] = 100;
+      vote_[0] = 0;
     }
     player->UpdateMoney(-kBribeSpendMoney);
     player->UpdateBribeDay(true);
@@ -326,11 +325,11 @@ void BuildText(sf::Text &text, const sf::Font &font, const sf::String &content, 
                const sf::Color &color, sf::Uint32 style, float x, float y) {
   text.setFont(font);
   text.setString(content);
-  text.setCharacterSize(size);
+  text.setCharacterSize(size * scale);
   text.setFillColor(color);
   text.setStyle(style);
   text.setOrigin(floor(text.getLocalBounds().width) / 2, floor(text.getLocalBounds().height) / 2);
-  text.setPosition(x, y);
+  text.setPosition(x * scale, y * scale);
 }
 
 // 更新dice的文字
@@ -343,7 +342,7 @@ void ChangeDiceText(sf::Text &text, const int dice_number) {
 void ChangeTellLocationText(sf::Text &text, const int location_index, const std::string *list_of_locations) {
   std::string location_string = "You are now at " + list_of_locations[location_index];
   text.setString(location_string);
-  text.setPosition(200, 640);
+  text.setPosition(200 * scale, 640 * scale);
 }
 
 void ChangeLocalPollsText(sf::Text &text, const Location *location) {
@@ -382,7 +381,7 @@ void ChangeTellPlayerAndPropertiesText(sf::Text &text, const Player *player) {
 }
 
 // 更新抹黑
-void ChangeMoHeiText(sf::Text &text, const Location* loc) {
+void ChangeMoHeiText(sf::Text &text, const Location *loc) {
   std::string mo_hei_string = "In " + loc->get_name() + ", all the voters have been convinced that\nyour opponent can't lead the country to make a big fortune.\nYour approval rate in " + loc->get_name() + " has improved to 100%.";
   text.setString(mo_hei_string);
   text.setOrigin(floor(text.getLocalBounds().width) / 2, floor(text.getLocalBounds().height) / 2);
@@ -415,7 +414,7 @@ bool city_or_not(const int location_index) {
 
 // function that finds the coordinates of players
 sf::Vector2f GetLocation(int player_num, int location_index, float coordinates[][4]) {
-  sf ::Vector2f result = {coordinates[location_index][player_num * 2] * 10 / 14, coordinates[location_index][player_num * 2 + 1] * 10 / 14};
+  sf ::Vector2f result = {coordinates[location_index][player_num * 2], coordinates[location_index][player_num * 2 + 1]};
   return result;
 }
 
@@ -510,7 +509,7 @@ int main(int argc, char **argv) {
   //地圖
   sf::Texture board_texture;
   board_texture.create(kWindowWidth, kWindowHeight);
-  board_texture.loadFromFile("images/map.png");
+  board_texture.loadFromFile("images/map1400.png");
   sf::Sprite board_sprite;
   board_sprite.setTexture(board_texture);
 
@@ -635,6 +634,12 @@ int main(int argc, char **argv) {
   prof_sprite.setScale((static_cast<float>(kPlayerWidth) / kWindowWidth), (static_cast<float>(kPlayerHeight) / kWindowHeight));
   prof_sprite.setPosition(GetLocation(1, 0, coordinates));
 
+  sf::Texture rule_texture;
+  rule_texture.create(kWindowWidth, kWindowHeight);
+  rule_texture.loadFromFile("images/rule.png");
+  sf::Sprite rule_sprite;
+  rule_sprite.setTexture(rule_texture);
+
   // General text setup
   // tell round text
   sf::Text tell_round_text;
@@ -674,7 +679,7 @@ int main(int argc, char **argv) {
             case sf::Event::EventType::KeyPressed:
               if (ev.key.code == sf::Keyboard::Space) {
                 // 按下空格就繼續，準備丟dice
-                state = DICE;
+                state = RULE;
               }
               break;
           }
@@ -682,6 +687,25 @@ int main(int argc, char **argv) {
         render_window.clear(sf::Color::Black);
         render_window.draw(menu_text);
         render_window.draw(menu_sentence);
+        render_window.display();
+        break;
+
+      case RULE:
+        while (render_window.pollEvent(ev)) {
+          switch (ev.type) {
+            case sf::Event::EventType::Closed:
+              render_window.close();
+              break;
+            case sf::Event::EventType::KeyPressed:
+              if (ev.key.code == sf::Keyboard::Space) {
+                // 按下空格就繼續，準備丟dice
+                state = DICE;
+              }
+              break;
+          }
+        }
+        render_window.clear(sf::Color::Black);
+        render_window.draw(rule_sprite);
         render_window.display();
         break;
 
@@ -757,6 +781,7 @@ int main(int argc, char **argv) {
                   else if (new_location_index == 21) {
                     jail_for_sightseeing = true;
                     players[current_id]->UpdateMoney(-players[current_id]->get_money() / 2);
+                    ChangeTellPlayerAndPropertiesText(tell_player_and_properties_text, players[current_id]);
                     state = WAIT;
                   }
 
